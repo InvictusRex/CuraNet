@@ -279,7 +279,7 @@
       async function loadDepartments() {
         try {
           const response = await fetch(
-            "http://localhost:8000/api/departments",
+            "/api/departments",
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -347,7 +347,7 @@
       async function loadDoctors(department = "", search = "") {
         setLoading(true);
         try {
-          let url = new URL("http://localhost:8000/api/doctors");
+          let url = new URL("/api/doctors", window.location.origin);
 
           if (department) {
             url.searchParams.append("department", department);
