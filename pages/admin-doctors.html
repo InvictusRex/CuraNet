@@ -628,8 +628,12 @@
 
       // Admin info fetch
       async function fetchAdminInfo() {
-        const adminId = localStorage.getItem("user_id") || "18346";
-        
+        const adminId = localStorage.getItem("user_id");
+        if (!adminId) {
+          console.warn("⚠️ Admin ID not found in localStorage");
+          return;
+        }
+
         try {
           const response = await fetch(
             `http://127.0.0.1:8000/admin/dashboard-info/${adminId}`
@@ -640,19 +644,12 @@
           const idElem = document.querySelector("#adminId");
           const avatarElem = document.querySelector("#userAvatar");
 
-          if (nameElem) nameElem.textContent = data.name || "Admin User";
-          if (idElem) idElem.textContent = `A${data.admin_id || adminId}`;
+          if (nameElem) nameElem.textContent = data.name || "Unknown Admin";
+          if (idElem) idElem.textContent = `${data.admin_id || adminId}`;
           if (avatarElem)
             avatarElem.textContent = (data.name || "A").charAt(0).toUpperCase();
         } catch (error) {
-          // Fallback data when API is not available
-          const nameElem = document.querySelector("#userName");
-          const idElem = document.querySelector("#adminId");
-          const avatarElem = document.querySelector("#userAvatar");
-
-          if (nameElem) nameElem.textContent = "Admin User";
-          if (idElem) idElem.textContent = `A${adminId}`;
-          if (avatarElem) avatarElem.textContent = "A";
+          console.error("Failed to fetch admin info:", error);
         }
       }
 
@@ -665,7 +662,7 @@
           const doctors = await response.json();
 
           const tbody = document.getElementById("doctorsTableBody");
-          tbody.innerHTML = "";
+          tbody.innerHTML = ""; // Clear existing rows
 
           doctors.forEach((doctor) => {
             const row = document.createElement("tr");
@@ -683,32 +680,7 @@
             tbody.appendChild(row);
           });
         } catch (error) {
-          // Fallback data when API is not available
-          const tbody = document.getElementById("doctorsTableBody");
-          tbody.innerHTML = `
-            <tr>
-              <td>D001</td>
-              <td>Dr. Smith</td>
-              <td>Cardiology</td>
-              <td>dr.smith@hospital.com</td>
-              <td>+1-555-0101</td>
-              <td>
-                <button class="btn-primary" onclick="alert('Demo mode - API not available')">Edit</button>
-                <button class="btn-danger" onclick="alert('Demo mode - API not available')">Remove</button>
-              </td>
-            </tr>
-            <tr>
-              <td>D002</td>
-              <td>Dr. Johnson</td>
-              <td>Neurology</td>
-              <td>dr.johnson@hospital.com</td>
-              <td>+1-555-0102</td>
-              <td>
-                <button class="btn-primary" onclick="alert('Demo mode - API not available')">Edit</button>
-                <button class="btn-danger" onclick="alert('Demo mode - API not available')">Remove</button>
-              </td>
-            </tr>
-          `;
+          console.error("Error fetching doctors:", error);
         }
       }
 
