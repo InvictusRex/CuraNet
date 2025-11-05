@@ -26,20 +26,42 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      // Here you would normally make an API call
-      // For demo, we'll redirect based on role
-      switch (selectedRole) {
-        case "admin":
-          window.location.href = "admin-dashboard.html";
-          break;
-        case "doctor":
-          window.location.href = "doctor-dashboard.html";
-          break;
-        case "patient":
-          window.location.href = "patient-dashboard.html";
-          break;
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier: username,
+          password: password,
+          user_type: selectedRole
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        localStorage.setItem('username', data.user.name);
+        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userId', data.user.id);
+        localStorage.setItem('userType', data.user.type);
+        
+        switch (selectedRole) {
+          case "admin":
+            window.location.href = "admin-dashboard.html";
+            break;
+          case "doctor":
+            window.location.href = "doctor-dashboard.html";
+            break;
+          case "patient":
+            window.location.href = "patient-dashboard.html";
+            break;
+        }
+      } else {
+        alert(data.detail || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
+      console.error('Login error:', error);
       alert("Login failed. Please try again.");
     }
   });

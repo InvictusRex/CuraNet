@@ -341,7 +341,7 @@
           }
 
           const response = await fetch(
-            `http://localhost:8000/patient/profile/${username}`
+            `/patient/profile/${username}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch profile info");

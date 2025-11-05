@@ -475,7 +475,7 @@
           }
 
           const response = await fetch(
-            `http://localhost:8000/patient/dashboard-info/${username}`
+            `/patient/dashboard-info/${username}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch dashboard info");
@@ -554,7 +554,7 @@
       async function fetchDoctors() {
         try {
           const response = await fetch(
-            "http://127.0.0.1:8000/admin/doctors-list"
+            "/admin/doctors-list"
           );
           const doctors = await response.json();
           const select = document.getElementById("doctorSelect");
@@ -587,7 +587,7 @@
 
           try {
             const response = await fetch(
-              "http://127.0.0.1:8000/admin/appointment",
+              "/admin/appointment",
               {
                 method: "POST",
                 headers: {

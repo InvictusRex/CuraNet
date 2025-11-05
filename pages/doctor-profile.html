@@ -334,7 +334,7 @@
           }
 
           const response = await fetch(
-            `http://localhost:8000/doctor/dashboard-info/${username}`
+            `/doctor/dashboard-info/${username}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch dashboard info");
@@ -364,7 +364,7 @@
           }
 
           const response = await fetch(
-            `http://localhost:8000/doctor/profile/${username}`
+            `/doctor/profile/${username}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch profile info");

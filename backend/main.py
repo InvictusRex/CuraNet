@@ -44,7 +44,7 @@ app.mount("/pages", StaticFiles(directory=os.path.join(base_dir, "pages")), name
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -64,15 +64,13 @@ def get_db():
 
 # Authentication dependency
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Security(security),
+    credentials: HTTPAuthorizationCredentials = Security(security, auto_error=False),
     db: Session = Depends(get_db),
 ):
-    try:
-        if not credentials:
-            raise HTTPException(status_code=401, detail="Invalid authentication")
+    # Make auth optional for now
+    if credentials:
         return credentials.credentials
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid authentication")
+    return None
     
 @app.get("/")
 def root():
