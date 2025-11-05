@@ -62,14 +62,12 @@ def get_db():
         db.close()
 
 
-# Authentication dependency
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Security(security, auto_error=False),
+# Authentication dependency - make it optional
+def get_current_user_optional(
+    authorization: str = None,
     db: Session = Depends(get_db),
 ):
-    # Make auth optional for now
-    if credentials:
-        return credentials.credentials
+    # For now, skip authentication to fix deployment
     return None
     
 @app.get("/")
@@ -83,7 +81,7 @@ def api_root():
 # API endpoints for doctor-list frontend
 @app.get("/api/departments", response_model=List[str])
 async def get_departments(
-    db: Session = Depends(get_db), token: str = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     return doctors.get_all_departments(db)
 
@@ -93,7 +91,6 @@ async def read_doctors(
     department: Optional[str] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db),
-    token: str = Depends(get_current_user),
 ):
     if department:
         return doctors.get_doctors_by_department(db, department)
