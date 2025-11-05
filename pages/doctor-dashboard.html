@@ -536,7 +536,7 @@
               }
   
               const response = await fetch(
-                  `http://localhost:8000/doctor/dashboard-info/${username}`
+                  `/doctor/dashboard-info/${username}`
               );
               if (!response.ok) {
                   throw new Error("Failed to fetch dashboard info");
@@ -577,7 +577,7 @@
             }
 
             const response = await fetch(
-                `http://localhost:8000/doctor/appointments/${username}`
+                `/doctor/appointments/${username}`
             );
             if (!response.ok) {
                 throw new Error("Failed to fetch appointments");
@@ -641,7 +641,7 @@
         const status = document.getElementById('updateStatus').value;
 
         try {
-            const response = await fetch(`http://localhost:8000/doctor/appointment/${appointmentId}`, {
+            const response = await fetch(`/doctor/appointment/${appointmentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
