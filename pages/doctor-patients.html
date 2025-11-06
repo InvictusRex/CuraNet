@@ -381,7 +381,7 @@
           <li><a href="doctor-profile.html">Profile</a></li>
           <li><a href="doctor-appointments.html">My Appointments</a></li>
           <li><a href="#" class="active">My Patients</a></li>
-          <li><a href="../index.html">Logout</a></li>
+          <li><a href="/">Logout</a></li>
         </ul>
       </aside>
 
@@ -404,6 +404,7 @@
                   <th>Phone</th>
                   <th>Last Visit</th>
                   <th>Total Visits</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="patientsTableBody">
@@ -476,13 +477,18 @@
                 <td>${patient.phone}</td>
                 <td>${patient.last_visit}</td>
                 <td>${patient.total_visits}</td>
+                <td>
+                  <button class="btn-primary" onclick="viewPatientDetails('${patient.patient_id}')">
+                    View Details
+                  </button>
+                </td>
               `;
               tableBody.appendChild(row);
             });
           } else {
             tableBody.innerHTML = `
               <tr>
-                <td colspan="6" style="text-align: center;">No patients found</td>
+                <td colspan="7" style="text-align: center;">No patients found</td>
               </tr>
             `;
           }
@@ -513,6 +519,11 @@
         loadDashboardInfo();
         loadPatients();
       });
+
+      // Function to view patient details
+      function viewPatientDetails(patientId) {
+        window.location.href = `patient-detail.html?id=${patientId}`;
+      }
     </script>
   </body>
 </html>

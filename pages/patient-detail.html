@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Details - CuraNet HMS</title>
+    <link rel="stylesheet" href="../assets/css/patient-detail.css" />
+    <style>
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #141414;
+        --text-primary: #ffffff;
+        --text-secondary: #a1a1a1;
+        --border-color: #2a2a2a;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --primary-color: #2196f3;
+        --success-color: #4caf50;
+        --warning-color: #ffc107;
+        --danger-color: #f44336;
+      }
+
+      [data-theme="dark"] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f3f4f6;
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --border-color: #e5e7eb;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        padding: 0.5rem;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+        z-index: 1000;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      .theme-toggle svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--text-primary);
+      }
+
+      .dashboard-container {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        margin-top: 10px;
+      }
+
+      .sidebar {
+        width: 280px;
+        background-color: var(--bg-secondary);
+        border-right: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-info {
+        text-align: center;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .user-info h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .user-info p {
+        color: var(--text-secondary);
+      }
+
+      .nav-menu {
+        list-style: none;
+        margin-top: 2rem;
+      }
+
+      .nav-menu li a {
+        display: block;
+        padding: 1rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+
+      .nav-menu li a:hover,
+      .nav-menu li a.active {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        box-shadow: 0 1px 10px var(--text-primary);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .dashboard-title {
+        font-size: 2rem;
+        color: var(--text-primary);
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .patient-overview {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .patient-card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .patient-avatar {
+        width: 120px;
+        height: 120px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 3rem;
+        font-weight: bold;
+      }
+
+      .patient-name {
+        font-size: 1.8rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .patient-id {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+      }
+
+      .patient-basic-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        text-align: left;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .info-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .info-value {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+      }
+
+      .patient-sections {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .section-card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+      }
+
+      .section-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .section-title {
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 600;
+      }
+
+      .section-body {
+        padding: 1.5rem;
+      }
+
+      .medical-history-text {
+        color: var(--text-primary);
+        line-height: 1.8;
+        background: var(--bg-primary);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .data-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        background: var(--bg-primary);
+      }
+
+      .data-table td {
+        color: var(--text-primary);
+      }
+
+      .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .status-pending {
+        background-color: var(--warning-color);
+        color: var(--bg-primary);
+      }
+
+      .status-completed {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .status-cancelled {
+        background-color: var(--danger-color);
+        color: white;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+      }
+
+      .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .document-item {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+      }
+
+      .document-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow-color);
+      }
+
+      .document-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+      }
+
+      .document-name {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .document-date {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 1024px) {
+        .patient-overview {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+
+        .patient-basic-info {
+          grid-template-columns: 1fr;
+        }
+
+        .documents-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+      }
+
+      .error {
+        background: var(--danger-color);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <span
+      style="
+        text-align: left;
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding-left: 1.5rem;
+        color: var(--text-primary);
+        margin-top: 1rem;
+        display: inline-block;
+      "
+      >CuraNet HMS</span
+    >
+
+    <button
+      class="theme-toggle"
+      onclick="toggleTheme()"
+      aria-label="Toggle theme"
+    >
+      <svg
+        class="sun-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"
+        />
+      </svg>
+    </button>
+
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">
+            <!-- Will be filled by JS -->
+          </div>
+          <h3 id="userName">Loading...</h3>
+          <p id="userId">Loading...</p>
+          <p id="userRole">Loading...</p>
+        </div>
+
+        <ul class="nav-menu" id="navMenu">
+          <!-- Navigation will be populated based on user role -->
+        </ul>
+      </aside>
+
+      <main class="main-content">
+        <div class="dashboard-header">
+          <h1 class="dashboard-title">Patient Details</h1>
+          <a href="javascript:history.back()" class="btn-secondary">← Back</a>
+        </div>
+
+        <div id="loadingState" class="loading">
+          <div>Loading patient information...</div>
+        </div>
+
+        <div id="errorState" class="error" style="display: none;">
+          <div id="errorMessage"></div>
+        </div>
+
+        <div id="patientContent" style="display: none;">
+          <div class="patient-overview">
+            <div class="patient-card">
+              <div class="patient-avatar" id="patientAvatar">P</div>
+              <h2 class="patient-name" id="patientName">Patient Name</h2>
+              <p class="patient-id" id="patientIdDisplay">Patient ID</p>
+              
+              <div class="patient-basic-info">
+                <div class="info-item">
+                  <span class="info-label">Age</span>
+                  <span class="info-value" id="patientAge">-</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Gender</span>
+                  <span class="info-value" id="patientGender">-</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Blood Group</span>
+                  <span class="info-value" id="patientBloodGroup">-</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Phone</span>
+                  <span class="info-value" id="patientPhone">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Contact Information</h3>
+              </div>
+              <div class="section-body">
+                <div class="patient-basic-info">
+                  <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="patientEmail">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Emergency Contact</span>
+                    <span class="info-value" id="emergencyContact">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Address</span>
+                    <span class="info-value" id="patientAddress">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Registration Date</span>
+                    <span class="info-value" id="registrationDate">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="patient-sections">
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Medical History</h3>
+              </div>
+              <div class="section-body">
+                <div class="medical-history-text" id="medicalHistoryText">
+                  Loading medical history...
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Visit History</h3>
+              </div>
+              <div class="section-body">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Diagnosis</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="visitHistoryTable">
+                      <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Prescriptions</h3>
+              </div>
+              <div class="section-body">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Duration</th>
+                        <th>Prescribed By</th>
+                      </tr>
+                    </thead>
+                    <tbody id="prescriptionsTable">
+                      <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Lab Reports</h3>
+              </div>
+              <div class="section-body">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Test Name</th>
+                        <th>Result</th>
+                        <th>Reference Range</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="labReportsTable">
+                      <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Medical Documents</h3>
+              </div>
+              <div class="section-body">
+                <div class="documents-grid" id="documentsGrid">
+                  <!-- Dynamic content will be inserted here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../assets/js/patient-detail.js"></script>
+    <script>
+      // Get patient ID from URL parameters
+      function getPatientIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+      }
+
+      // Function to toggle theme
+      function toggleTheme() {
+        const body = document.body;
+        if (body.hasAttribute("data-theme")) {
+          body.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+        } else {
+          body.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+        }
+      }
+
+      // Function to load user info for sidebar
+      async function loadUserInfo() {
+        try {
+          const username = localStorage.getItem("username");
+          const userType = localStorage.getItem("userType") || "doctor";
+          
+          if (!username) {
+            window.location.href = "../index.html";
+            return;
+          }
+
+          let response;
+          let navItems = [];
+
+          if (userType === "doctor") {
+            response = await fetch(`/doctor/dashboard-info/${username}`);
+            navItems = [
+              { href: "doctor-dashboard.html", text: "Dashboard" },
+              { href: "doctor-profile.html", text: "Profile" },
+              { href: "doctor-appointments.html", text: "My Appointments" },
+              { href: "doctor-patients.html", text: "My Patients", active: true },
+              { href: "/", text: "Logout" }
+            ];
+          } else if (userType === "admin") {
+            response = await fetch(`/admin/dashboard-info/${username}`);
+            navItems = [
+              { href: "admin-dashboard.html", text: "Dashboard" },
+              { href: "admin-doctors.html", text: "Doctors" },
+              { href: "admin-patient.html", text: "Patients", active: true },
+              { href: "admin-appointment.html", text: "Appointments" },
+              { href: "/", text: "Logout" }
+            ];
+          }
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch user info");
+          }
+
+          const data = await response.json();
+
+          // Update user info in sidebar
+          document.getElementById("userName").textContent = data.name;
+          document.getElementById("userId").textContent = userType === "doctor" ? data.doctor_id : data.admin_id;
+          document.getElementById("userRole").textContent = data.department || userType.charAt(0).toUpperCase() + userType.slice(1);
+          document.getElementById("userAvatar").textContent = data.name[0].toUpperCase();
+
+          // Update navigation
+          const navMenu = document.getElementById("navMenu");
+          navMenu.innerHTML = navItems.map(item => 
+            `<li><a href="${item.href}" ${item.active ? 'class="active"' : ''}>${item.text}</a></li>`
+          ).join('');
+
+        } catch (error) {
+          console.error("Error loading user info:", error);
+        }
+      }
+
+      // Function to load patient details
+      async function loadPatientDetails() {
+        const patientId = getPatientIdFromUrl();
+        
+        if (!patientId) {
+          showError("No patient ID provided");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/admin/patients-list`);
+          
+          if (response.ok) {
+            const patients = await response.json();
+            const numericId = patientId.toString().replace(/^P/, '');
+            const patient = patients.find(p => 
+              p.patient_id == patientId || 
+              p.patient_id == `P${numericId}` || 
+              p.id == numericId
+            );
+            
+            if (patient) {
+              const enhancedPatient = {
+                ...patient,
+                gender: "Not specified",
+                emergency_contact: "+1 (555) 123-4567",
+                address: "123 Main St, City, State 12345",
+                registration_date: "2023-01-15",
+                visits: [
+                  {
+                    date: "2024-01-15",
+                    doctor: "Dr. Smith",
+                    department: "Cardiology",
+                    diagnosis: "Routine checkup",
+                    status: "completed"
+                  }
+                ],
+                prescriptions: [
+                  {
+                    date: "2024-01-15",
+                    medication: "Lisinopril 10mg",
+                    dosage: "Once daily",
+                    duration: "30 days",
+                    prescribed_by: "Dr. Smith"
+                  }
+                ],
+                lab_reports: [
+                  {
+                    date: "2024-01-15",
+                    test_name: "Complete Blood Count",
+                    result: "Normal",
+                    reference_range: "4.5-11.0 x10³/μL",
+                    status: "normal"
+                  }
+                ],
+                documents: [
+                  {
+                    id: "doc1",
+                    name: "Blood Test Results",
+                    date: "2024-01-15"
+                  }
+                ]
+              };
+              displayPatientData(enhancedPatient);
+            } else {
+              showError("Patient not found");
+            }
+          } else {
+            showError("Failed to load patient information");
+          }
+        } catch (error) {
+          console.error("Error loading patient details:", error);
+          showError("Failed to load patient information. Please try again.");
+        }
+      }
+
+      // Function to display patient data
+      function displayPatientData(patient) {
+        // Hide loading state and show content
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("patientContent").style.display = "block";
+
+        // Basic patient information
+        document.getElementById("patientName").textContent = patient.name || "Unknown";
+        document.getElementById("patientIdDisplay").textContent = `Patient ID: ${patient.id || patient.patient_id || "N/A"}`;
+        document.getElementById("patientAvatar").textContent = (patient.name || "P")[0].toUpperCase();
+        
+        // Patient details
+        document.getElementById("patientAge").textContent = patient.age || "N/A";
+        document.getElementById("patientGender").textContent = patient.gender || "N/A";
+        document.getElementById("patientBloodGroup").textContent = patient.blood_group || "N/A";
+        document.getElementById("patientPhone").textContent = patient.phone || "N/A";
+        document.getElementById("patientEmail").textContent = patient.email || "N/A";
+        document.getElementById("emergencyContact").textContent = patient.emergency_contact || "N/A";
+        document.getElementById("patientAddress").textContent = patient.address || "N/A";
+        document.getElementById("registrationDate").textContent = patient.registration_date || "N/A";
+
+        // Medical history
+        document.getElementById("medicalHistoryText").textContent = 
+          patient.medical_history || "No medical history recorded.";
+
+        // Visit history
+        populateVisitHistory(patient.visits || []);
+        
+        // Prescriptions
+        populatePrescriptions(patient.prescriptions || []);
+        
+        // Lab reports
+        populateLabReports(patient.lab_reports || []);
+        
+        // Documents
+        populateDocuments(patient.documents || []);
+      }
+
+      // Function to populate visit history table
+      function populateVisitHistory(visits) {
+        const tableBody = document.getElementById("visitHistoryTable");
+        
+        if (visits.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div>No visit history available</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tableBody.innerHTML = visits.map(visit => `
+          <tr>
+            <td>${visit.date || "N/A"}</td>
+            <td>${visit.doctor || "N/A"}</td>
+            <td>${visit.department || "N/A"}</td>
+            <td>${visit.diagnosis || "N/A"}</td>
+            <td><span class="status-badge status-${visit.status || 'completed'}">${visit.status || "Completed"}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Function to populate prescriptions table
+      function populatePrescriptions(prescriptions) {
+        const tableBody = document.getElementById("prescriptionsTable");
+        
+        if (prescriptions.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div class="empty-state-icon">💊</div>
+                <div>No prescriptions available</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tableBody.innerHTML = prescriptions.map(prescription => `
+          <tr>
+            <td>${prescription.date || "N/A"}</td>
+            <td>${prescription.medication || "N/A"}</td>
+            <td>${prescription.dosage || "N/A"}</td>
+            <td>${prescription.duration || "N/A"}</td>
+            <td>${prescription.prescribed_by || "N/A"}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Function to populate lab reports table
+      function populateLabReports(labReports) {
+        const tableBody = document.getElementById("labReportsTable");
+        
+        if (labReports.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div class="empty-state-icon">🧪</div>
+                <div>No lab reports available</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tableBody.innerHTML = labReports.map(report => `
+          <tr>
+            <td>${report.date || "N/A"}</td>
+            <td>${report.test_name || "N/A"}</td>
+            <td>${report.result || "N/A"}</td>
+            <td>${report.reference_range || "N/A"}</td>
+            <td><span class="status-badge status-${report.status || 'completed'}">${report.status || "Normal"}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Function to populate documents
+      function populateDocuments(documents) {
+        const documentsGrid = document.getElementById("documentsGrid");
+        
+        if (documents.length === 0) {
+          documentsGrid.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📄</div>
+              <div>No documents available</div>
+            </div>
+          `;
+          return;
+        }
+
+        documentsGrid.innerHTML = documents.map(doc => `
+          <div class="document-item" onclick="viewDocument('${doc.id}')">
+            <div class="document-icon">📄</div>
+            <div class="document-name">${doc.name || "Document"}</div>
+            <div class="document-date">${doc.date || "N/A"}</div>
+          </div>
+        `).join('');
+      }
+
+      // Function to view document
+      function viewDocument(documentId) {
+        // Implement document viewing logic
+        console.log("Viewing document:", documentId);
+        // This could open a modal or navigate to a document viewer
+      }
+
+      // Function to show error
+      function showError(message) {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("errorMessage").textContent = message;
+        document.getElementById("errorState").style.display = "block";
+      }
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        // Set theme from localStorage
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+          document.body.setAttribute("data-theme", "dark");
+        }
+
+        loadUserInfo();
+        loadPatientDetails();
+      });
+    </script>
+  </body>
+</html>
