@@ -13,18 +13,20 @@ phases:
 
   pre_build:
     commands:
+      - echo "Setting up environment variables..."
+      - export DB_HOST="curanet-db.cliek6io2ac7.eu-north-1.rds.amazonaws.com"
+      - export DB_USER="admin"
+      - export DB_PASSWORD="Database12!"
+      - export DB_NAME="curanet_db_test"
       - echo "Checking DB connection..."
-      - cd backend
-      - python -c "import pymysql, os; pymysql.connect(host=os.getenv('DB_HOST'), user=os.getenv('DB_USER'), password=os.getenv('DB_PASSWORD'), database=os.getenv('DB_NAME')); print('DB connected successfully!')" || echo "DB connection check skipped"
-      - cd ..
+      - python -c "import pymysql; pymysql.connect(host='$DB_HOST', user='$DB_USER', password='$DB_PASSWORD', database='$DB_NAME'); print('DB connected successfully!')" || echo "DB connection check skipped"
 
   build:
     commands:
       - echo "Validating FastAPI app import..."
       - python -c "import sys; sys.path.insert(0, 'backend'); from backend.main import app; print('FastAPI app imported successfully')"
-      - echo "Running Alembic migrations..."
-      - cd backend && alembic upgrade head || echo "Migration skipped or already up-to-date"
-      - cd ..
+      - echo "Creating database tables..."
+      - python -c "from backend.database import engine; from backend.models import Base; Base.metadata.create_all(bind=engine); print('Database tables created successfully')" || echo "Table creation skipped"
       - echo "Build phase completed successfully"
 
   post_build:

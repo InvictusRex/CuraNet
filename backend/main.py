@@ -30,6 +30,7 @@ from .crud import (
     doctor_profiles,
     doctor_appointments,
     doctor_patients,
+    patient_detail,
 )
 from .schemas import AdminAppointmentResponse, AppointmentCreate, AppointmentUpdate
 
@@ -406,3 +407,11 @@ def get_doctor_patients(username: str, db: Session = Depends(get_db)):
     
     patients = doctor_patients.get_doctor_patients(db, doctor.id)
     return doctor_patients.format_patients_response(patients)
+
+# Patient detail endpoint
+@app.get("/api/patient/{patient_id}")
+def get_patient_detail(patient_id: int, db: Session = Depends(get_db)):
+    patient_data = patient_detail.get_patient_detail(db, patient_id)
+    if not patient_data:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return patient_data

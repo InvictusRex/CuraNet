@@ -446,7 +446,7 @@
           <li><a href="./admin-doctors.html">Doctors</a></li>
           <li><a href="#" class="active">Patients</a></li>
           <li><a href="./admin-appointment.html">Appointments</a></li>
-          <li><a href="../index.html">Logout</a></li>
+          <li><a href="/">Logout</a></li>
         </ul>
       </aside>
 
@@ -636,7 +636,7 @@
 
         try {
           const response = await fetch(
-            `http://127.0.0.1:8000/admin/dashboard-info/${adminId}`
+            `/admin/dashboard-info/${adminId}`
           );
           const data = await response.json();
 
@@ -657,7 +657,7 @@
       async function fetchAllPatients() {
         try {
           const response = await fetch(
-            "http://127.0.0.1:8000/admin/patients-list"
+            "/admin/patients-list"
           );
           const patients = await response.json();
 
@@ -674,6 +674,7 @@
               <td>${patient.email}</td>
               <td>${patient.phone}</td>
               <td>
+                <button class="btn-secondary" onclick="viewPatientDetails('${patient.patient_id}')">View Details</button>
                 <button class="btn-primary" onclick="editPatient('${patient.patient_id}')">Edit</button>
                 <button class="btn-danger" onclick="removePatient('${patient.patient_id}')">Remove</button>
               </td>
@@ -690,7 +691,7 @@
         try {
           const numericId = patientId.replace("P", "");
           const response = await fetch(
-            `http://127.0.0.1:8000/admin/patient/${numericId}`
+            `/admin/patient/${numericId}`
           );
           const patient = await response.json();
 
@@ -731,7 +732,7 @@
 
             try {
               const updateResponse = await fetch(
-                `http://127.0.0.1:8000/admin/patient/${numericId}`,
+                `/admin/patient/${numericId}`,
                 {
                   method: "PUT",
                   headers: {
@@ -771,7 +772,7 @@
           try {
             const numericId = patientId.replace("P", "");
             const response = await fetch(
-              `http://127.0.0.1:8000/admin/patient/${numericId}`,
+              `/admin/patient/${numericId}`,
               {
                 method: "DELETE",
                 headers: {
@@ -813,7 +814,7 @@
 
           try {
             const response = await fetch(
-              "http://127.0.0.1:8000/patients/register",
+              "/patients/register",
               {
                 method: "POST",
                 headers: {
@@ -845,6 +846,12 @@
           event.target.style.display = "none";
         }
       };
+
+      // Function to view patient details
+      function viewPatientDetails(patientId) {
+        const numericId = patientId.replace("P", "");
+        window.location.href = `patient-detail.html?id=${numericId}`;
+      }
 
       // Initialize
       document.addEventListener("DOMContentLoaded", () => {

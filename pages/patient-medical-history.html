@@ -374,7 +374,7 @@
             <li><a href="patient-profile.html">Profile</a></li>
             <li><a href="#" class="active">Medical History</a></li>
             <li><a href="doctor-list.html">Find Doctors</a></li>
-            <li><a href="../index.html">Logout</a></li>
+            <li><a href="/">Logout</a></li>
           </ul>
       </aside>
 
@@ -488,7 +488,7 @@
           // Fetch doctors for dropdown
           async function fetchDoctors() {
             try {
-              const response = await fetch("http://127.0.0.1:8000/admin/doctors-list");
+              const response = await fetch("/admin/doctors-list");
               const doctors = await response.json();
               const select = document.getElementById("doctorSelect");
               select.innerHTML = '<option value="">Select Doctor</option>';
@@ -538,7 +538,7 @@
             };
         
             try {
-              const response = await fetch("http://127.0.0.1:8000/admin/appointment", {
+              const response = await fetch("/admin/appointment", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",

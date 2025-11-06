@@ -446,7 +446,7 @@
           <li><a href="#" class="active">Doctors</a></li>
           <li><a href="./admin-patient.html">Patients</a></li>
           <li><a href="./admin-appointment.html">Appointments</a></li>
-          <li><a href="../index.html">Logout</a></li>
+          <li><a href="/">Logout</a></li>
         </ul>
       </aside>
 
@@ -636,7 +636,7 @@
 
         try {
           const response = await fetch(
-            `http://127.0.0.1:8000/admin/dashboard-info/${adminId}`
+            `/admin/dashboard-info/${adminId}`
           );
           const data = await response.json();
 
@@ -657,7 +657,7 @@
       async function fetchAllDoctors() {
         try {
           const response = await fetch(
-            "http://127.0.0.1:8000/admin/doctors-list"
+            "/admin/doctors-list"
           );
           const doctors = await response.json();
 
@@ -689,7 +689,7 @@
         try {
           const numericId = doctorId.replace("D", "");
           const response = await fetch(
-            `http://127.0.0.1:8000/admin/doctor/${numericId}`
+            `/admin/doctor/${numericId}`
           );
           const doctor = await response.json();
 
@@ -730,7 +730,7 @@
 
             try {
               const updateResponse = await fetch(
-                `http://127.0.0.1:8000/admin/doctor/${numericId}`,
+                `/admin/doctor/${numericId}`,
                 {
                   method: "PUT",
                   headers: {
@@ -770,7 +770,7 @@
           try {
             const numericId = doctorId.replace("D", "");
             const response = await fetch(
-              `http://127.0.0.1:8000/admin/doctor/${numericId}`,
+              `/admin/doctor/${numericId}`,
               {
                 method: "DELETE",
                 headers: {
@@ -812,7 +812,7 @@
 
           try {
             const response = await fetch(
-              "http://127.0.0.1:8000/doctors/register",
+              "/doctors/register",
               {
                 method: "POST",
                 headers: {

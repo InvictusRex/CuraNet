@@ -196,7 +196,7 @@
     </style>
   </head>
   <body>
-    <a href="../index.html" style="text-decoration: none">
+    <a href="/" style="text-decoration: none">
       <span
         style="
           text-align: left;
@@ -347,13 +347,18 @@
       async function loadDoctors(department = "", search = "") {
         setLoading(true);
         try {
-          let url = new URL("/api/doctors", window.location.origin);
+          let url = "/api/doctors";
+          const params = new URLSearchParams();
 
           if (department) {
-            url.searchParams.append("department", department);
+            params.append("department", department);
           }
           if (search) {
-            url.searchParams.append("search", search);
+            params.append("search", search);
+          }
+          
+          if (params.toString()) {
+            url += "?" + params.toString();
           }
 
           const response = await fetch(url, {
