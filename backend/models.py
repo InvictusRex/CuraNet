@@ -1,92 +1,21 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Decimal, Date, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum, Boolean, DECIMAL
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from database import Base
+from .database import Base
+from datetime import datetime
 import enum
 
-# Enums for constrained fields
-class GenderEnum(enum.Enum):
-    M = "M"
-    F = "F"
-    O = "O"
+class BaseUser(Base):
+    __abstract__ = True
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), index=True, nullable=False)
+    phone = Column(String(20), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password = Column(String(100), nullable=False)
 
-class VisitTypeEnum(enum.Enum):
-    Outpatient = "Outpatient"
-    Inpatient = "Inpatient"
-    Emergency = "Emergency"
-    Follow_up = "Follow-up"
+    def verify_password(self, password: str) -> bool:
+        return self.password == password
 
-class PriorityLevelEnum(enum.Enum):
-    Low = "Low"
-    Normal = "Normal"
-    High = "High"
-    Critical = "Critical"
-
-class AccessLevelEnum(enum.Enum):
-    Read = "Read"
-    Write = "Write"
-    Full = "Full"
-
-# Models
-class Hospital(Base):
-    __tablename__ = "hospitals"
-    
-    hospital_id = Column(Integer, primary_key=True, autoincrement=True)
-    hospital_name = Column(String(255), nullable=False)
-    hospital_code = Column(String(20), unique=True, nullable=False)
-    address = Column(String(500))
-    phone = Column(String(20))
-    email = Column(String(255))
-    license_number = Column(String(100))
-    created_at = Column(DateTime, default=func.current_timestamp())
-    updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
-    is_active = Column(Boolean, default=True)
-    
-    # Relationships
-    departments = relationship("Department", back_populates="hospital")
-    doctors = relationship("Doctor", back_populates="hospital")
-    patient_visits = relationship("PatientVisit", back_populates="hospital")
-
-class Department(Base):
-    __tablename__ = "departments"
-    
-    department_id = Column(Integer, primary_key=True, autoincrement=True)
-    hospital_id = Column(Integer, ForeignKey("hospitals.hospital_id"), nullable=False)
-    department_name = Column(String(255), nullable=False)
-    department_code = Column(String(20), nullable=False)
-    head_doctor_id = Column(Integer, ForeignKey("doctors.doctor_id"))
-    created_at = Column(DateTime, default=func.current_timestamp())
-    is_active = Column(Boolean, default=True)
-    
-    # Relationships
-    hospital = relationship("Hospital", back_populates="departments")
-    doctors = relationship("Doctor", back_populates="department")
-
-class Doctor(Base):
-    __tablename__ = "doctors"
-    
-    doctor_id = Column(Integer, primary_key=True, autoincrement=True)
-    hospital_id = Column(Integer, ForeignKey("hospitals.hospital_id"), nullable=False)
-    department_id = Column(Integer, ForeignKey("departments.department_id"))
-    doctor_code = Column(String(20), unique=True, nullable=False)
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
-    phone = Column(String(20))
-    specialization = Column(String(255))
-    license_number = Column(String(100), unique=True, nullable=False)
-    years_of_experience = Column(Integer, default=0)
-    qualification = Column(String(500))
-    created_at = Column(DateTime, default=func.current_timestamp())
-    updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
-    is_active = Column(Boolean, default=True)
-    
-    # Relationships
-    hospital = relationship("Hospital", back_populates="doctors")
-    department = relationship("Department", back_populates="doctors")
-    patient_visits = relationship("PatientVisit", back_populates="primary_doctor")
-
-class Patient(Base):
+class Patient(BaseUser):
     __tablename__ = "patients"
     
     patient_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -155,20 +84,148 @@ class PatientVisit(Base):
     primary_doctor = relationship("Doctor", back_populates="patient_visits")
     current_status = relationship("StatusCategory", back_populates="patient_visits")
 
-class VitalSigns(Base):
+# Enum classes for medical session management
+class SessionStatus(enum.Enum):
+    active = "active"
+    completed = "completed"
+    paused = "paused"
+
+class SeverityLevel(enum.Enum):
+    mild = "mild"
+    moderate = "moderate"
+    severe = "severe"
+
+class DiagnosisType(enum.Enum):
+    primary = "primary"
+    secondary = "secondary"
+    differential = "differential"
+
+class ConfidenceLevel(enum.Enum):
+    confirmed = "confirmed"
+    probable = "probable"
+    possible = "possible"
+
+class TreatmentStatus(enum.Enum):
+    active = "active"
+    completed = "completed"
+    discontinued = "discontinued"
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    appointment_time = Column(DateTime, nullable=False)
+    status = Column(String(50), nullable=False, default="pending")
+
+    patient = relationship("Patient", back_populates="appointments")
+    doctor = relationship("Doctor", back_populates="appointments")
+    medical_sessions = relationship("MedicalSession", back_populates="appointment")
+
+class MedicalSession(Base):
+    __tablename__ = "medical_sessions"
+    session_id = Column(Integer, primary_key=True, index=True)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=False)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    session_date = Column(DateTime, default=datetime.utcnow)
+    status = Column(Enum(SessionStatus), default=SessionStatus.active)
+    chief_complaint = Column(Text)
+    session_notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    appointment = relationship("Appointment", back_populates="medical_sessions")
+    patient = relationship("Patient")
+    doctor = relationship("Doctor")
+    prescriptions = relationship("Prescription", back_populates="session")
+    symptoms = relationship("Symptom", back_populates="session")
+    diagnoses = relationship("Diagnosis", back_populates="session")
+    vital_signs = relationship("VitalSign", back_populates="session")
+    treatment_plans = relationship("TreatmentPlan", back_populates="session")
+
+class Prescription(Base):
+    __tablename__ = "prescriptions"
+    prescription_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=False)
+    medication_name = Column(String(200), nullable=False)
+    dosage = Column(String(100), nullable=False)
+    frequency = Column(String(100), nullable=False)
+    duration = Column(String(100), nullable=False)
+    instructions = Column(Text)
+    prescribed_date = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("MedicalSession", back_populates="prescriptions")
+
+class Symptom(Base):
+    __tablename__ = "symptoms"
+    symptom_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=False)
+    symptom_description = Column(Text, nullable=False)
+    severity = Column(Enum(SeverityLevel), nullable=False)
+    duration = Column(String(100))
+    notes = Column(Text)
+    recorded_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("MedicalSession", back_populates="symptoms")
+
+class Diagnosis(Base):
+    __tablename__ = "diagnoses"
+    diagnosis_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=False)
+    diagnosis_code = Column(String(20))
+    diagnosis_description = Column(Text, nullable=False)
+    diagnosis_type = Column(Enum(DiagnosisType), default=DiagnosisType.primary)
+    confidence_level = Column(Enum(ConfidenceLevel), default=ConfidenceLevel.probable)
+    notes = Column(Text)
+    diagnosed_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("MedicalSession", back_populates="diagnoses")
+
+class VitalSign(Base):
     __tablename__ = "vital_signs"
-    
-    vital_id = Column(Integer, primary_key=True, autoincrement=True)
-    visit_id = Column(Integer, ForeignKey("patient_visits.visit_id"), nullable=False)
-    recorded_by_doctor_id = Column(Integer, ForeignKey("doctors.doctor_id"), nullable=False)
-    recorded_at = Column(DateTime, default=func.current_timestamp())
-    temperature = Column(Decimal(4, 1))
+    vital_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=False)
     blood_pressure_systolic = Column(Integer)
     blood_pressure_diastolic = Column(Integer)
     heart_rate = Column(Integer)
+    temperature = Column(DECIMAL(4, 2))
     respiratory_rate = Column(Integer)
-    oxygen_saturation = Column(Decimal(5, 2))
-    weight_kg = Column(Decimal(5, 2))
-    height_cm = Column(Decimal(5, 2))
-    bmi = Column(Decimal(4, 1))
-    notes = Column(String(500))
+    oxygen_saturation = Column(Integer)
+    weight = Column(DECIMAL(5, 2))
+    height = Column(DECIMAL(5, 2))
+    recorded_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("MedicalSession", back_populates="vital_signs")
+
+class TreatmentPlan(Base):
+    __tablename__ = "treatment_plans"
+    plan_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=False)
+    treatment_description = Column(Text, nullable=False)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    status = Column(Enum(TreatmentStatus), default=TreatmentStatus.active)
+    follow_up_required = Column(Boolean, default=False)
+    follow_up_date = Column(DateTime)
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("MedicalSession", back_populates="treatment_plans")
+
+class MedicalReport(Base):
+    __tablename__ = "medical_reports"
+    report_id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    session_id = Column(Integer, ForeignKey("medical_sessions.session_id"), nullable=True)
+    report_name = Column(String(255), nullable=False)
+    file_key = Column(String(500), nullable=False)  # S3 object key
+    file_size = Column(Integer, nullable=False)
+    content_type = Column(String(100), nullable=False)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    shared_with = Column(Text)  # JSON array of doctor IDs who can access
+    
+    patient = relationship("Patient")
+    doctor = relationship("Doctor")
+    session = relationship("MedicalSession")

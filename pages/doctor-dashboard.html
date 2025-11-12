@@ -220,15 +220,39 @@
         background-color: var(--warning-color);
         color: var(--bg-primary);
       }
+      
+      .status-confirmed {
+        background-color: var(--primary-color);
+        color: white;
+      }
+      
+      .status-in-progress {
+        background-color: var(--success-color);
+        color: white;
+      }
+      
+      .status-completed {
+        background-color: var(--text-secondary);
+        color: white;
+      }
+      
+      .status-cancelled {
+        background-color: var(--danger-color);
+        color: white;
+      }
 
       .btn-primary,
-      .btn-secondary {
+      .btn-secondary,
+      .btn-success,
+      .btn-warning {
         padding: 0.5rem 1rem;
         border-radius: 6px;
         border: none;
         font-weight: 600;
         cursor: pointer;
         transition: transform 0.2s, box-shadow 0.2s;
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
       }
 
       .btn-primary {
@@ -237,9 +261,19 @@
       }
 
       .btn-secondary {
-        background: var(--success-color);
-        color: var(--bg-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
         border: 1px solid var(--border-color);
+      }
+      
+      .btn-success {
+        background: var(--success-color);
+        color: white;
+      }
+      
+      .btn-warning {
+        background: var(--warning-color);
+        color: var(--bg-primary);
       }
 
       .modal {
@@ -294,6 +328,16 @@
         border: 1px solid var(--border-color);
         background: var(--bg-primary);
         color: var(--text-primary);
+      }
+
+      .status-select {
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        min-width: 120px;
       }
 
       @media (max-width: 768px) {
@@ -411,6 +455,7 @@
           <li><a href="doctor-profile.html">Profile</a></li>
           <li><a href="doctor-appointments.html">My Appointments</a></li>
           <li><a href="doctor-patients.html">My Patients</a></li>
+          <li><a href="doctor-active-sessions.html">Active Sessions</a></li>
           <li><a href="/">Logout</a></li>
         </ul>
       </aside>
@@ -445,6 +490,15 @@
             </div>
             <div class="card-body">
               <h2>3</h2>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Active Sessions</h3>
+            </div>
+            <div class="card-body">
+              <h2 id="activeSessionsCount">0</h2>
             </div>
           </div>
         </div>
@@ -595,9 +649,23 @@
                         <td>${appointment.date_time}</td>
                         <td>${appointment.patient_id}</td>
                         <td>${appointment.patient_name}</td>
-                        <td><span class="status-badge status-${appointment.status.toLowerCase()}">${appointment.status}</span></td>
+                        <td>
+                            <select class="status-select" data-appointment-id="${appointment.appointment_id.replace('A', '')}">
+                                <option value="pending" ${appointment.status.toLowerCase() === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="confirmed" ${appointment.status.toLowerCase() === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="in_progress" ${appointment.status.toLowerCase() === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="completed" ${appointment.status.toLowerCase() === 'completed' ? 'selected' : ''}>Completed</option>
+                                <option value="cancelled" ${appointment.status.toLowerCase() === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
                         <td>
                             <button class="btn-secondary" onclick="openUpdateModal('${appointment.appointment_id}', '${appointment.date_time}')">Update</button>
+                            <button class="btn-secondary" onclick="saveStatusChange('${appointment.appointment_id.replace('A', '')}')">Save Status</button>
+                            ${appointment.status.toLowerCase() !== 'completed' && appointment.status.toLowerCase() !== 'cancelled' ? 
+                                (appointment.status.toLowerCase() === 'in_progress' ? 
+                                    `<button class="btn-warning" onclick="continueSession('${appointment.appointment_id.replace('A', '')}')">Continue Session</button>` : 
+                                    `<button class="btn-primary" onclick="startSession('${appointment.appointment_id.replace('A', '')}')">Start Session</button>`) : 
+                                ''}
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -636,7 +704,8 @@
     document.getElementById('updateAppointmentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const appointmentId = document.getElementById('updateAppointmentId').value.replace('A', '');
+        const appointmentIdFull = document.getElementById('updateAppointmentId').value;
+        const appointmentId = appointmentIdFull.replace('A', ''); // Remove 'A' prefix
         const dateTime = document.getElementById('updateDateTime').value + ':00'; // Add seconds
         const status = document.getElementById('updateStatus').value;
 
@@ -653,7 +722,8 @@
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update appointment');
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to update appointment');
             }
 
             closeModal();
@@ -661,7 +731,7 @@
             alert('Appointment updated successfully');
         } catch (error) {
             console.error('Error updating appointment:', error);
-            alert('Failed to update appointment');
+            alert(`Failed to update appointment: ${error.message}`);
         }
     });
 
@@ -678,10 +748,109 @@
         }
     });
 
+    // Save status change function (only when Save Status button is clicked)
+    async function saveStatusChange(appointmentId) {
+        const statusSelect = document.querySelector(`select[data-appointment-id="${appointmentId}"]`);
+        const newStatus = statusSelect.value;
+        
+        try {
+            const response = await fetch(`/doctor/appointment/${appointmentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+
+            alert('Appointment status updated successfully');
+            loadAppointments(); // Reload the appointments table
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert('Failed to update appointment status');
+        }
+    }
+
+    // Medical Session Functions
+    async function startSession(appointmentId) {
+        try {
+            const response = await fetch(`/appointments/${appointmentId}/start-session`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to start session');
+            }
+
+            const data = await response.json();
+            window.location.href = `doctor-session-management.html?session=${data.session_id}&appointment=${appointmentId}`;
+        } catch (error) {
+            console.error('Error starting session:', error);
+            alert('Failed to start medical session');
+        }
+    }
+
+    async function continueSession(appointmentId) {
+        try {
+            // Get existing session for this appointment
+            const response = await fetch(`/appointments/${appointmentId}/start-session`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to get session');
+            }
+
+            const data = await response.json();
+            window.location.href = `doctor-session-management.html?session=${data.session_id}&appointment=${appointmentId}`;
+        } catch (error) {
+            console.error('Error continuing session:', error);
+            alert('Failed to continue medical session');
+        }
+    }
+
+    // Load active sessions count
+    async function loadActiveSessionsCount() {
+        try {
+            const username = localStorage.getItem("username");
+            if (!username) return;
+            
+            // Get doctor ID first
+            const doctorResponse = await fetch(`/doctor/dashboard-info/${username}`);
+            if (!doctorResponse.ok) return;
+            
+            const doctorData = await doctorResponse.json();
+            const doctorId = doctorData.doctor_id.replace('D', ''); // Remove 'D' prefix
+            
+            const response = await fetch(`/doctor/${doctorId}/active-sessions`);
+            if (response.ok) {
+                const sessions = await response.json();
+                document.getElementById('activeSessionsCount').textContent = sessions.length;
+            }
+        } catch (error) {
+            console.error('Error loading active sessions count:', error);
+        }
+    }
+
     // Add loadAppointments to the DOMContentLoaded event listener
     document.addEventListener("DOMContentLoaded", () => {
         loadDashboardInfo(); // Your existing function
         loadAppointments(); // New function
+        loadActiveSessionsCount(); // New function
+        
+        // Auto-refresh active sessions count every 30 seconds
+        setInterval(loadActiveSessionsCount, 30000);
     });
   </script>
     </script>

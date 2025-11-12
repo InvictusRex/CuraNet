@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Medical Reports - CuraNet HMS</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --border-color: #2a2a2a;
+            --primary-color: #2196f3;
+            --success-color: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .nav-menu li a {
+            display: block;
+            padding: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-menu li a:hover,
+        .nav-menu li a.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: var(--primary-color);
+            background: var(--bg-primary);
+        }
+
+        .upload-content svg {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-link {
+            color: var(--primary-color);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .reports-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+        }
+
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background: var(--bg-primary);
+        }
+
+        .report-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .report-info p {
+            margin: 0.25rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-download {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-download:hover {
+            background: #1976d2;
+        }
+
+        .success-message {
+            color: var(--success-color);
+            padding: 1rem;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            color: #f44336;
+            padding: 1rem;
+            background: rgba(244, 67, 54, 0.1);
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">P</div>
+                <h3 id="userName">Patient</h3>
+                <p id="patientId">ID: P001</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a href="patient-dashboard.html">Dashboard</a></li>
+                <li><a href="patient-profile.html">Profile</a></li>
+                <li><a href="patient-medical-history.html">Medical History</a></li>
+                <li><a href="patient-reports.html" class="active">Medical Reports</a></li>
+                <li><a href="file-sharing.html">File Sharing</a></li>
+                <li><a href="/">Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">📁 My Medical Reports</h1>
+                <p>Upload and manage your medical documents</p>
+            </div>
+
+            <div class="upload-section">
+                <h3>Upload New Report</h3>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <p>Drag files here or <span class="upload-link">browse</span></p>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            PDF, DOC, DOCX, JPG, PNG (Max 50MB)
+                        </p>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                </div>
+                <div id="uploadResult"></div>
+            </div>
+
+            <div class="reports-section">
+                <h3>My Reports</h3>
+                <div id="reportsList">
+                    <div class="loading">Loading your reports...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentPatientId = 1; // Get from URL or session
+        let currentDoctorId = 1;  // Get from session
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPatientInfo();
+            setupFileUpload();
+            loadMyReports();
+        });
+
+        async function loadPatientInfo() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const patientId = urlParams.get('id') || '1';
+                
+                const response = await fetch(`/api/patient/${patientId}`);
+                if (response.ok) {
+                    const patient = await response.json();
+                    
+                    document.getElementById('userName').textContent = patient.name;
+                    document.getElementById('patientId').textContent = `ID: P${patient.id}`;
+                    document.getElementById('userAvatar').textContent = patient.name[0].toUpperCase();
+                    
+                    // Update current patient ID for uploads
+                    currentPatientId = patient.id;
+                }
+            } catch (error) {
+                console.log('Could not load patient info');
+            }
+        }
+
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const uploadLink = document.querySelector('.upload-link');
+
+            uploadLink.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        async function handleFileUpload(file) {
+            const resultDiv = document.getElementById('uploadResult');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('patient_id', currentPatientId);
+                formData.append('doctor_id', currentDoctorId);
+
+                resultDiv.innerHTML = '<div class="loading">Uploading...</div>';
+
+                const response = await fetch('/reports/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success-message">
+                            ✅ File "${file.name}" uploaded successfully!
+                        </div>
+                    `;
+                    loadMyReports(); // Refresh the list
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error-message">
+                            ❌ Upload failed: ${result.detail || result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error-message">
+                        ❌ Upload failed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function loadMyReports() {
+            const reportsList = document.getElementById('reportsList');
+            
+            try {
+                const response = await fetch(`/reports/patient/${currentPatientId}?doctor_id=${currentDoctorId}`);
+                
+                if (!response.ok) {
+                    reportsList.innerHTML = '<div class="loading">No reports found</div>';
+                    return;
+                }
+
+                const reports = await response.json();
+                
+                if (!reports || reports.length === 0) {
+                    reportsList.innerHTML = '<div class="loading">No reports uploaded yet</div>';
+                    return;
+                }
+
+                reportsList.innerHTML = reports.map(report => `
+                    <div class="report-item">
+                        <div class="report-info">
+                            <h4>${report.report_name}</h4>
+                            <p>Uploaded: ${new Date(report.uploaded_at).toLocaleDateString()}</p>
+                            <p>Size: ${formatFileSize(report.file_size)}</p>
+                            <p>Uploaded by: ${report.uploaded_by}</p>
+                        </div>
+                        <div class="report-actions">
+                            <button class="btn-download" onclick="downloadReport(${report.report_id})">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                reportsList.innerHTML = '<div class="loading">Unable to load reports</div>';
+            }
+        }
+
+        async function downloadReport(reportId) {
+            try {
+                const response = await fetch(`/reports/${reportId}/download?doctor_id=${currentDoctorId}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.open(result.download_url, '_blank');
+                } else {
+                    alert('Download failed: ' + result.detail);
+                }
+            } catch (error) {
+                alert('Download failed: ' + error.message);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

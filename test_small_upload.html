@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Small File Upload</title>
+</head>
+<body>
+    <h2>Test File Upload (Small File)</h2>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" accept=".txt,.pdf" required>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            // Check file size (limit to 1MB for testing)
+            if (file.size > 1024 * 1024) {
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red;">File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Please use a file smaller than 1MB for testing.</p>
+                `;
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('patient_id', '1');
+            formData.append('doctor_id', '1');
+            formData.append('shared_with', '[]');
+            
+            try {
+                document.getElementById('result').innerHTML = '<p>Uploading...</p>';
+                
+                const response = await fetch('/reports/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: green;">✅ Upload successful!</p>
+                        <p>File: ${result.file_name}</p>
+                        <p>Report ID: ${result.report_id}</p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: red;">❌ Upload failed: ${result.detail || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red;">❌ Error: ${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

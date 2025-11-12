@@ -233,3 +233,72 @@ class DoctorAllAppointmentsResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Medical Session Schemas
+class VitalSignCreate(BaseModel):
+    blood_pressure_systolic: Optional[int] = None
+    blood_pressure_diastolic: Optional[int] = None
+    heart_rate: Optional[int] = None
+    temperature: Optional[float] = None
+    respiratory_rate: Optional[int] = None
+    oxygen_saturation: Optional[int] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+
+class SymptomCreate(BaseModel):
+    symptom_description: str
+    severity: str  # mild, moderate, severe
+    duration: Optional[str] = None
+    notes: Optional[str] = None
+
+class PrescriptionCreate(BaseModel):
+    medication_name: str
+    dosage: str
+    frequency: str
+    duration: str
+    instructions: Optional[str] = None
+
+class DiagnosisCreate(BaseModel):
+    diagnosis_code: Optional[str] = None
+    diagnosis_description: str
+    diagnosis_type: str = "primary"  # primary, secondary, differential
+    confidence_level: str = "probable"  # confirmed, probable, possible
+    notes: Optional[str] = None
+
+class TreatmentPlanCreate(BaseModel):
+    treatment_description: str
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    follow_up_required: bool = False
+    follow_up_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class MedicalSessionCreate(BaseModel):
+    appointment_id: int
+    chief_complaint: Optional[str] = None
+    session_notes: Optional[str] = None
+
+class MedicalSessionUpdate(BaseModel):
+    chief_complaint: Optional[str] = None
+    session_notes: Optional[str] = None
+    status: Optional[str] = None  # active, completed, paused
+
+class MedicalSessionResponse(BaseModel):
+    session_id: int
+    appointment_id: int
+    patient_id: int
+    doctor_id: int
+    session_date: datetime
+    status: str
+    chief_complaint: Optional[str]
+    session_notes: Optional[str]
+    patient_name: str
+    doctor_name: str
+    vital_signs: List[dict] = []
+    symptoms: List[dict] = []
+    prescriptions: List[dict] = []
+    diagnoses: List[dict] = []
+    treatment_plans: List[dict] = []
+
+    class Config:
+        from_attributes = True

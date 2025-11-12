@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical File Sharing - CuraNet HMS</title>
+    <link rel="stylesheet" href="../assets/css/file-sharing.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --border-color: #2a2a2a;
+            --primary-color: #2196f3;
+            --success-color: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .nav-menu li a {
+            display: block;
+            padding: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-menu li a:hover,
+        .nav-menu li a.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-sharing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .file-sharing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">P</div>
+                <h3 id="userName">Patient</h3>
+                <p id="patientId">ID: P001</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a href="patient-dashboard.html">Dashboard</a></li>
+                <li><a href="patient-profile.html">Profile</a></li>
+                <li><a href="patient-medical-history.html">Medical History</a></li>
+                <li><a href="patient-reports.html">Medical Reports</a></li>
+                <li><a href="file-sharing.html" class="active">File Sharing</a></li>
+                <li><a href="/">Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">📁 Medical File Sharing</h1>
+                <p>Upload and share medical reports securely</p>
+            </div>
+
+            <div class="file-sharing-grid">
+                <div id="uploadSection">
+                    <!-- Upload UI will be inserted here -->
+                </div>
+                <div id="reportsSection">
+                    <!-- Reports list will be inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/file-sharing.js"></script>
+    <script>
+        // Get patient and doctor IDs from URL or session
+        const urlParams = new URLSearchParams(window.location.search);
+        const patientId = urlParams.get('id') || 1;
+        const doctorId = 1; // Get from session in real implementation
+
+        // Load patient info and create UI
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPatientInfo();
+            fileSharing.createUploadUI('uploadSection', patientId, doctorId);
+            fileSharing.createReportsListUI('reportsSection', patientId, doctorId);
+        });
+
+        async function loadPatientInfo() {
+            try {
+                const response = await fetch(`/api/patient/${patientId}`);
+                if (response.ok) {
+                    const patient = await response.json();
+                    
+                    document.getElementById('userName').textContent = patient.name;
+                    document.getElementById('patientId').textContent = `ID: P${patient.id}`;
+                    document.getElementById('userAvatar').textContent = patient.name[0].toUpperCase();
+                }
+            } catch (error) {
+                console.log('Could not load patient info');
+            }
+        }
+
+        // Theme toggle functionality (if needed)
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>
