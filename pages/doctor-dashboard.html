@@ -4,138 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CuraNet - Doctor Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
     <style>
-      :root {
-        --bg-primary: #0a0a0a;
-        --bg-secondary: #141414;
-        --text-primary: #ffffff;
-        --text-secondary: #a1a1a1;
-        --border-color: #2a2a2a;
-        --shadow-color: rgba(0, 0, 0, 0.3);
-        --primary-color: #2196f3;
-        --success-color: #4caf50;
-        --warning-color: #ffc107;
-        --danger-color: #f44336;
-      }
-
-      [data-theme="dark"] {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f3f4f6;
-        --text-primary: #111827;
-        --text-secondary: #4b5563;
-        --border-color: #e5e7eb;
-        --shadow-color: rgba(0, 0, 0, 0.1);
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial, sans-serif;
-      }
-
-      body {
-        background-color: var(--bg-primary);
-        color: var(--text-primary);
-        line-height: 1.6;
-        transition: background-color 0.3s, color 0.3s;
-      }
-
-      .theme-toggle {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        padding: 0.5rem;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.2s;
-      }
-
-      .theme-toggle:hover {
-        transform: scale(1.1);
-      }
-
-      .theme-toggle svg {
-        width: 24px;
-        height: 24px;
-        fill: var(--text-primary);
-      }
-
-      .dashboard-container {
-        display: flex;
-        min-height: calc(100vh - 60px);
-        margin-top: 10px;
-      }
-
-      .sidebar {
-        width: 280px;
-        background-color: var(--bg-secondary);
-        border-right: 1px solid var(--border-color);
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .user-info {
-        text-align: center;
-        padding: 1.5rem 0;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .user-avatar {
-        width: 60px;
-        height: 60px;
-        background: var(--primary-color);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        color: white;
-        font-size: 1.5rem;
-      }
-
-      .user-info h3 {
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-      }
-
-      .user-info p {
-        color: var(--text-secondary);
-      }
-
-      .nav-menu {
-        list-style: none;
-        margin-top: 2rem;
-      }
-
-      .nav-menu li a {
-        display: block;
-        padding: 1rem;
-        color: var(--text-secondary);
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s;
-      }
-
-      .nav-menu li a:hover,
-      .nav-menu li a.active {
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        box-shadow: 0 1px 10px var(--text-primary);
-      }
-
-      .main-content {
-        flex: 1;
-        padding: 2rem;
-        overflow-y: auto;
-      }
+      /* Page-specific styles only */
 
       .dashboard-header {
         display: flex;
@@ -408,38 +280,25 @@
     </style>
   </head>
   <body>
-    <span
-      style="
-        text-align: left;
-        font-size: 1.5rem;
-        font-weight: bold;
-        padding-left: 1.5rem;
-        color: var(--text-primary);
-        margin-top: 1rem;
-        display: inline-block;
-      "
-      >CuraNet HMS</span
-    >
-
-    <button
-      class="theme-toggle"
-      onclick="toggleTheme()"
-      aria-label="Toggle theme"
-    >
-      <svg
-        class="sun-icon"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"
-        />
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
       </svg>
     </button>
 
+    <!-- Sidebar Toggle for Mobile -->
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay"></div>
+
     <div class="dashboard-container">
       <aside class="sidebar">
-        <div class="sidebar-header"></div>
+        <div class="sidebar-header">
+          <a href="/" class="sidebar-brand">CuraNet HMS</a>
+          <button class="sidebar-close" aria-label="Close sidebar">×</button>
+        </div>
 
         <div class="user-info">
           <div class="user-avatar" id="userAvatar">
@@ -451,19 +310,20 @@
         </div>
 
         <ul class="nav-menu">
-          <li><a href="#" class="active">Dashboard</a></li>
-          <li><a href="doctor-profile.html">Profile</a></li>
-          <li><a href="doctor-appointments.html">My Appointments</a></li>
-          <li><a href="doctor-patients.html">My Patients</a></li>
-          <li><a href="doctor-active-sessions.html">Active Sessions</a></li>
-          <li><a href="/">Logout</a></li>
+          <li><a href="doctor-dashboard.html" class="active"><span class="nav-icon">📊</span>Dashboard</a></li>
+          <li><a href="doctor-profile.html"><span class="nav-icon">👤</span>Profile</a></li>
+          <li><a href="doctor-appointments.html"><span class="nav-icon">📅</span>My Appointments</a></li>
+          <li><a href="doctor-patients.html"><span class="nav-icon">👥</span>My Patients</a></li>
+          <li><a href="doctor-active-sessions.html"><span class="nav-icon">🔄</span>Active Sessions</a></li>
+          <li><a href="/"><span class="nav-icon">🚪</span>Logout</a></li>
         </ul>
       </aside>
 
       <main class="main-content">
-        <div class="dashboard-header">
-          <h1 class="dashboard-title">Doctor Dashboard</h1>
-        </div>
+        <div class="page-content">
+          <div class="dashboard-header">
+            <h1 class="dashboard-title">Doctor Dashboard</h1>
+          </div>
 
         <div class="dashboard-cards">
           <div class="card">
@@ -524,6 +384,7 @@
               </tbody>
             </table>
           </div>
+          </div>
         </div>
       </main>
     </div>
@@ -579,6 +440,10 @@
       </div>
   </div>
 
+    <!-- Core Scripts -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    
     <script>
       // Function to load dashboard header info
       async function loadDashboardInfo() {

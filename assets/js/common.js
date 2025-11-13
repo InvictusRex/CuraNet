@@ -190,11 +190,70 @@ function logout() {
   window.location.href = '/';
 }
 
+// Enhanced navigation management
+function updateNavigationState() {
+  const currentPath = window.location.pathname;
+  const currentPage = currentPath.split('/').pop() || 'index.html';
+  
+  // Update active navigation state
+  document.querySelectorAll('.nav-menu a').forEach(link => {
+    link.classList.remove('active');
+    const href = link.getAttribute('href');
+    if (href) {
+      const linkPage = href.split('/').pop();
+      if (linkPage === currentPage || 
+          (currentPage === 'index.html' && href === '/') ||
+          (currentPage === '' && href === '/')) {
+        link.classList.add('active');
+      }
+    }
+  });
+}
+
+// Enhanced user info loading
+async function loadUserInfo() {
+  const auth = checkAuth();
+  if (!auth) return;
+
+  try {
+    let endpoint = '';
+    if (auth.userType === 'doctor') {
+      endpoint = `/doctor/dashboard-info/${auth.username}`;
+    } else if (auth.userType === 'patient') {
+      endpoint = `/patient/dashboard-info/${auth.username}`;
+    } else {
+      return;
+    }
+
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error('Failed to fetch user info');
+    
+    const userData = await response.json();
+    
+    // Update user info in sidebar
+    if (window.layoutManager) {
+      window.layoutManager.updateUserInfo({
+        name: userData.name,
+        id: userData.patient_id || userData.doctor_id
+      });
+    }
+    
+    return userData;
+  } catch (error) {
+    console.error('Error loading user info:', error);
+  }
+}
+
 // Initialize common functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   initializeTheme();
   initializeModals();
-  setActiveNavItem();
+  updateNavigationState();
+  
+  // Load user info if on a dashboard page
+  if (document.querySelector('.sidebar')) {
+    loadUserInfo();
+  }
   
   // Add logout functionality to logout links
   document.querySelectorAll('a[href="/"], a[href="index.html"]').forEach(link => {
@@ -205,6 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+  
+  // Add page transition effects
+  document.body.classList.add('page-loaded');
 });
 
 // Export functions for use in other scripts
@@ -219,5 +281,7 @@ window.CuraNetCommon = {
   validateForm,
   handleApiError,
   checkAuth,
-  logout
+  logout,
+  updateNavigationState,
+  loadUserInfo
 };

@@ -1,4 +1,5 @@
 /* Global CSS Variables and Base Styles */
+@import url('layout.css');
 :root {
   --bg-primary: #0a0a0a;
   --bg-secondary: #141414;
@@ -81,20 +82,11 @@ body {
   opacity: 0.7;
 }
 
-/* Dashboard Layout */
+/* Dashboard Layout - Enhanced */
 .dashboard-container {
   display: flex;
-  min-height: calc(100vh - 60px);
-  margin-top: 10px;
-}
-
-.sidebar {
-  width: 280px;
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
 }
 
 .user-info {
@@ -139,18 +131,20 @@ body {
   transition: all 0.2s;
 }
 
-.nav-menu li a:hover,
-.nav-menu li a.active {
+.nav-menu li a:hover {
   background: var(--bg-primary);
   color: var(--text-primary);
   box-shadow: 0 1px 10px var(--shadow-color);
+  transform: translateX(4px);
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
+.nav-menu li a.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
+
+
 
 /* Dashboard Header */
 .dashboard-header {
