@@ -4,8 +4,351 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CuraNet - Patient Dashboard</title>
-    <link rel="stylesheet" href="../assets/css/global.css" />
-    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+    <link rel="stylesheet" href="../assets/css/enhanced-appointment.css" />
+    <style>
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #141414;
+        --text-primary: #ffffff;
+        --text-secondary: #a1a1a1;
+        --border-color: #2a2a2a;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --primary-color: #2196f3;
+        --success-color: #4caf50;
+        --warning-color: #ffc107;
+        --danger-color: #f44336;
+      }
+
+      [data-theme="dark"] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f3f4f6;
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --border-color: #e5e7eb;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        padding: 0.5rem;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      .theme-toggle svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--text-primary);
+      }
+
+      .dashboard-container {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        margin-top: 10px;
+      }
+
+      .sidebar {
+        width: 280px;
+        background-color: var(--bg-secondary);
+        border-right: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-info {
+        text-align: center;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .user-info h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .user-info p {
+        color: var(--text-secondary);
+      }
+
+      .nav-menu {
+        list-style: none;
+        margin-top: 2rem;
+      }
+
+      .nav-menu li a {
+        display: block;
+        padding: 1rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+
+      .nav-menu li a:hover,
+      .nav-menu li a.active {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        box-shadow: 0 1px 10px var(--text-primary);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .dashboard-title {
+        font-size: 2rem;
+        color: var(--text-primary);
+      }
+
+      .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 1px 10px var(--text-primary);
+      }
+
+      .card-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .card-title {
+        color: var(--text-primary);
+        font-size: 1.2rem;
+      }
+
+      .card-body {
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .card-body h2 {
+        font-size: 2.5rem;
+        color: var(--text-primary);
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .data-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+      }
+
+      .status-pending {
+        background-color: var(--warning-color);
+        color: var(--bg-primary);
+      }
+
+      .status-confirmed {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .status-in_progress,
+      .status-in-progress {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .status-completed {
+        background-color: var(--text-secondary);
+        color: white;
+      }
+
+      .status-cancelled {
+        background-color: var(--danger-color);
+        color: white;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+
+      .patient-details .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .patient-details label {
+        display: block;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+      }
+
+      .patient-details textarea {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+      }
+
+      .form-group select,
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
     <a href="/" class="brand-logo">CuraNet HMS</a>
@@ -41,11 +384,11 @@
         </div>
 
         <ul class="nav-menu">
-          <li><a href="#" class="active">Dashboard</a></li>
-          <!--<li><a href="#appointments">My Appointments</a></li>-->
+          <li><a href="patient-dashboard.html" class="active">Dashboard</a></li>
           <li><a href="patient-profile.html">Profile</a></li>
           <li><a href="patient-medical-history.html">Medical History</a></li>
-          <li><a href="doctor-list.html">Find Doctors</a></li>
+          <li><a href="patient-reports.html">Medical Reports</a></li>
+          <li><a href="file-sharing.html">File Sharing</a></li>
           <li><a href="/">Logout</a></li>
         </ul>
       </aside>
@@ -110,26 +453,64 @@
       </main>
     </div>
 
-    <!-- Book Appointment Modal -->
+    <!-- Enhanced Book Appointment Modal -->
     <div class="modal" id="bookAppointmentModal">
-      <div class="modal-content">
+      <div class="modal-content appointment-modal">
         <div class="modal-header">
           <h2>Book Appointment</h2>
           <button class="close-modal">&times;</button>
         </div>
+        
         <form id="appointmentForm">
-          <div class="form-group">
-            <label for="appointmentDateTime">Date and Time</label>
-            <input type="datetime-local" id="appointmentDateTime" required />
-          </div>
-          <div class="form-group">
+          <!-- Doctor Selection -->
+          <div class="doctor-selection">
             <label for="doctorSelect">Select Doctor</label>
             <select id="doctorSelect" required>
-              <option value="">Select Doctor</option>
+              <option value="">Choose a doctor...</option>
               <!-- Will be populated dynamically -->
             </select>
           </div>
-          <button type="submit" class="btn-primary">Book Appointment</button>
+
+          <div class="appointment-container">
+            <!-- Calendar Section -->
+            <div class="appointment-section">
+              <h3>📅 Select Date</h3>
+              <div id="calendarContainer">
+                <!-- Calendar will be rendered here -->
+              </div>
+            </div>
+
+            <!-- Time Slots Section -->
+            <div class="appointment-section">
+              <h3>🕐 Select Time</h3>
+              <div id="timeSlotsContainer">
+                <p class="no-selection">Please select a date first</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selection Summary -->
+          <div class="selection-summary">
+            <h3>📋 Appointment Summary</h3>
+            <div class="selection-item">
+              <span class="selection-label">Date:</span>
+              <span class="selection-value" id="selectedDateDisplay">No date selected</span>
+            </div>
+            <div class="selection-item">
+              <span class="selection-label">Time:</span>
+              <span class="selection-value" id="selectedTimeDisplay">No time selected</span>
+            </div>
+            <div class="selection-item">
+              <span class="selection-label">Doctor:</span>
+              <span class="selection-value" id="selectedDoctorDisplay">No doctor selected</span>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn-cancel close-modal">Cancel</button>
+            <button type="submit" class="btn-book">Book Appointment</button>
+          </div>
         </form>
       </div>
     </div>
@@ -171,7 +552,7 @@
                 <td>${appointment.appointment_id}</td>
                 <td>${appointment.date_time}</td>
                 <td>${appointment.doctor}</td>
-                <td>${appointment.status}</td>
+                <td><span class="status-badge status-${appointment.status.toLowerCase().replace(' ', '_')}">${appointment.status}</span></td>
               `;
               tableBody.appendChild(row);
             });
@@ -214,79 +595,12 @@
         }
       });
 
-      // Fetch doctors for dropdown
-      async function fetchDoctors() {
-        try {
-          const response = await fetch(
-            "/admin/doctors-list"
-          );
-          const doctors = await response.json();
-          const select = document.getElementById("doctorSelect");
-          select.innerHTML = '<option value="">Select Doctor</option>';
-          doctors.forEach((doctor) => {
-            select.innerHTML += `<option value="${doctor.id}">${doctor.name} (${doctor.department})</option>`;
-          });
-        } catch (error) {
-          console.error("Error fetching doctors:", error);
-        }
-      }
+      // Note: fetchDoctors function is now handled by enhanced-appointment.js
 
-      // Add appointment form submission handler
-      document
-        .getElementById("appointmentForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
+      // Note: Appointment form submission is now handled by enhanced-appointment.js
 
-          const dateTimeInput = document.getElementById(
-            "appointmentDateTime"
-          ).value;
-          const formattedDateTime = dateTimeInput.replace("T", " ") + ":00";
-
-          const formData = {
-            patient_id: parseInt(localStorage.getItem("user_id")),
-            doctor_id: parseInt(document.getElementById("doctorSelect").value),
-            appointment_time: formattedDateTime,
-            status: "pending", // Hardcoded to pending for patients
-          };
-
-          try {
-            const response = await fetch(
-              "/admin/appointment",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-              }
-            );
-
-            if (response.ok) {
-              document.getElementById("bookAppointmentModal").style.display =
-                "none";
-              e.target.reset();
-              await loadDashboardInfo(); // Refresh the list
-              alert("Appointment booked successfully!");
-            } else {
-              const errorData = await response.json();
-              alert(
-                `Error booking appointment: ${
-                  errorData.detail || "Unknown error"
-                }`
-              );
-            }
-          } catch (error) {
-            console.error("Error booking appointment:", error);
-            alert("Failed to book appointment. Please try again.");
-          }
-        });
-
-      // Initialize doctors dropdown when opening modal
-      document
-        .querySelector('[data-modal="bookAppointmentModal"]')
-        .addEventListener("click", () => {
-          fetchDoctors();
-        });
+      // Note: Modal initialization is now handled by enhanced-appointment.js
     </script>
+    <script src="../assets/js/enhanced-appointment.js"></script>
   </body>
 </html>

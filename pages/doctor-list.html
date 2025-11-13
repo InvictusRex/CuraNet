@@ -68,10 +68,79 @@
         fill: var(--text-primary);
       }
 
+      .dashboard-container {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        margin-top: 10px;
+      }
+
+      .sidebar {
+        width: 280px;
+        background-color: var(--bg-secondary);
+        border-right: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-info {
+        text-align: center;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .user-info h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .user-info p {
+        color: var(--text-secondary);
+      }
+
+      .nav-menu {
+        list-style: none;
+        margin-top: 2rem;
+      }
+
+      .nav-menu li a {
+        display: block;
+        padding: 1rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+
+      .nav-menu li a:hover,
+      .nav-menu li a.active {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        box-shadow: 0 1px 10px var(--text-primary);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
       .container {
-        margin: 0 20px;
-        padding: 0 0%;
-        padding-top: 1rem;
+        margin: 0;
+        padding: 0;
       }
 
       .page-header {
@@ -180,6 +249,14 @@
       }
 
       @media (max-width: 768px) {
+        .dashboard-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+
         .page-header {
           flex-direction: column;
           align-items: stretch;
@@ -196,20 +273,18 @@
     </style>
   </head>
   <body>
-    <a href="/" style="text-decoration: none">
-      <span
-        style="
-          text-align: left;
-          font-size: 1.5rem;
-          font-weight: bold;
-          padding-left: 1.5rem;
-          color: var(--text-primary);
-          margin-top: 1rem;
-          display: inline-block;
-        "
-        >CuraNet HMS</span
-      >
-    </a>
+    <span
+      style="
+        text-align: left;
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding-left: 1.5rem;
+        color: var(--text-primary);
+        margin-top: 1rem;
+        display: inline-block;
+      "
+      >CuraNet HMS</span
+    >
 
     <button
       class="theme-toggle"
@@ -227,29 +302,51 @@
       </svg>
     </button>
 
-    <div class="container">
-      <header class="page-header">
-        <h1>Our Doctors</h1>
-        <div class="filters">
-          <select id="departmentFilter">
-            <option value="">All Departments</option>
-          </select>
-          <input
-            type="text"
-            id="searchDoctor"
-            placeholder="Search doctors..."
-          />
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">
+            <!-- Will be filled by JS -->
+          </div>
+          <h3 id="userName">Loading...</h3>
+          <p id="patientId">Loading...</p>
         </div>
-      </header>
 
-      <div id="loading" class="loading-spinner" style="display: none">
-        <div class="spinner"></div>
-        <p>Loading doctors...</p>
-      </div>
+        <ul class="nav-menu">
+          <li><a href="patient-dashboard.html">Dashboard</a></li>
+          <li><a href="patient-profile.html">Profile</a></li>
+          <li><a href="patient-medical-history.html">Medical History</a></li>
+          <li><a href="#" class="active">Find Doctors</a></li>
+          <li><a href="/">Logout</a></li>
+        </ul>
+      </aside>
 
-      <div class="doctors-grid" id="doctorsGrid">
-        <!-- Doctor cards will be populated dynamically -->
-      </div>
+      <main class="main-content">
+        <div class="container">
+          <header class="page-header">
+            <h1>Our Doctors</h1>
+            <div class="filters">
+              <select id="departmentFilter">
+                <option value="">All Departments</option>
+              </select>
+              <input
+                type="text"
+                id="searchDoctor"
+                placeholder="Search doctors..."
+              />
+            </div>
+          </header>
+
+          <div id="loading" class="loading-spinner" style="display: none">
+            <div class="spinner"></div>
+            <p>Loading doctors...</p>
+          </div>
+
+          <div class="doctors-grid" id="doctorsGrid">
+            <!-- Doctor cards will be populated dynamically -->
+          </div>
+        </div>
+      </main>
     </div>
 
     <script>
@@ -328,8 +425,8 @@
                 doctor.description || "No description available"
               }</p>
               ${
-                localStorage.getItem("user_type") === "patient"
-                  ? `<a href="/appointments/book/${doctor.id}" class="btn-primary">Book Appointment</a>`
+localStorage.getItem("user_type") === "patient"
+                  ? `<button class="btn-primary" onclick="bookAppointment(${doctor.id})">Book Appointment</button>`
                   : ""
               }
             </div>
@@ -421,15 +518,41 @@
         .getElementById("searchDoctor")
         .addEventListener("input", debounce(filterDoctors, 300));
 
+      // Load patient info for sidebar
+      async function loadPatientInfo() {
+        try {
+          const username = localStorage.getItem("username");
+          if (!username) {
+            window.location.href = "../index.html";
+            return;
+          }
+
+          const response = await fetch(`/patient/dashboard-info/${username}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch patient info");
+          }
+
+          const data = await response.json();
+
+          // Update user info
+          document.getElementById("userName").textContent = data.name;
+          document.getElementById("patientId").textContent = data.patient_id;
+          document.getElementById("userAvatar").textContent = data.name[0].toUpperCase();
+        } catch (error) {
+          console.error("Error loading patient info:", error);
+        }
+      }
+
+      // Book appointment function
+      function bookAppointment(doctorId) {
+        // For now, redirect to patient dashboard where they can book appointments
+        // In the future, this could open a booking modal
+        alert('Appointment booking feature coming soon! Please use the Book Appointment button on your dashboard.');
+        window.location.href = 'patient-dashboard.html';
+      }
+
       // Initialize page
       document.addEventListener("DOMContentLoaded", async () => {
-        // Check authentication
-        //const token = localStorage.getItem("token");
-        //if (!token) {
-        //  window.location.href = "/login.html";
-        //  return;
-        //}
-
         // Set theme from localStorage
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "dark") {
@@ -437,6 +560,7 @@
         }
 
         try {
+          await loadPatientInfo();
           await loadDepartments();
           await loadDoctors();
         } catch (error) {

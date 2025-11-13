@@ -6,11 +6,11 @@ from datetime import datetime
 
 def get_doctor_appointments(db: Session, doctor_id: int, limit: int = 10) -> List[models.Appointment]:
     """
-    Fetch pending appointments for a doctor in ascending order of date/time
+    Fetch upcoming appointments for a doctor (all except completed) in ascending order of date/time
     """
     return db.query(models.Appointment)\
              .filter(models.Appointment.doctor_id == doctor_id)\
-             .filter(models.Appointment.status == "pending")\
+             .filter(models.Appointment.status != "completed")\
              .order_by(asc(models.Appointment.appointment_time))\
              .limit(limit)\
              .all()

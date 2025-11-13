@@ -3,6 +3,14 @@ from .. import models
 from typing import Optional, List
 from datetime import datetime
 
+def get_patient_by_name(db: Session, username: str) -> Optional[models.Patient]:
+    """
+    Fetch patient information by username
+    """
+    return db.query(models.Patient)\
+             .filter(models.Patient.name == username)\
+             .first()
+
 def get_patient_medical_history_info(db: Session, username: str) -> Optional[models.Patient]:
     """
     Fetch patient information for medical history page
@@ -10,6 +18,15 @@ def get_patient_medical_history_info(db: Session, username: str) -> Optional[mod
     return db.query(models.Patient)\
              .filter(models.Patient.name == username)\
              .first()
+
+def get_patient_medical_history(db: Session, patient_id: int) -> List[models.Appointment]:
+    """
+    Fetch all appointments for the patient's medical history
+    """
+    return db.query(models.Appointment)\
+             .filter(models.Appointment.patient_id == patient_id)\
+             .order_by(models.Appointment.appointment_time.desc())\
+             .all()
 
 def get_patient_appointments(db: Session, patient_id: int) -> List[models.Appointment]:
     """
